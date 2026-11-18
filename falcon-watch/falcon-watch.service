@@ -1,0 +1,14 @@
+[Unit]
+Description=Log the sender of every SIGKILL (Falcon catcher)
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bpftrace /usr/local/share/falcon-watch/falconwatch.bt
+StandardOutput=append:/var/log/falcon-watch.log
+StandardError=append:/var/log/falcon-watch.log
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

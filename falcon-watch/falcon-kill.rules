@@ -1,0 +1,9 @@
+## Catch kill-family syscalls in the audit log, with the sender's exe,
+## auid and pid on every record. Install:
+##   cp falcon-kill.rules /etc/audit/rules.d/
+##   augenrules --load
+## Read results with:  ausearch -k sigkill -i
+## Note: if the box runs audit in immutable mode (-e 2), rule changes
+## only take effect after a reboot.
+-a always,exit -F arch=b64 -S kill -S tgkill -S tkill -k sigkill
+-a always,exit -F arch=b32 -S kill -S tgkill -S tkill -k sigkill

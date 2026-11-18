@@ -1,0 +1,49 @@
+#!/usr/bin/env bpftrace
+/*
+ * falconwatch.bt - log who sends SIGKILL on this box.
+ *
+ * Layer 1: the kill-family syscalls. Catches every userspace sender and
+ *          names it exactly (comm + pid + target).
+ * Layer 2: the signal_generate tracepoint. Fires for EVERY SIGKILL the
+ *          kernel generates, including ones sent from kernel context
+ *          (e.g. an eBPF program calling bpf_send_signal), where no
+ *          syscall ever happens and layer 1 sees nothing.
+ *
+ * Read layer 2's si_code: 0 = SI_USER (a kill syscall did it, layer 1
+ * has the sender), 128 = SI_KERNEL (kernel-generated), -6 = SI_TKILL.
+ * A SIGKILL whose timestamp matches your tracer's death, with
+ * SI_KERNEL and no matching layer-1 line, is a kernel-side kill.
+ */
+
+BEGIN
+{
+	printf("falconwatch: watching for SIGKILL\n");
+}
+
+tracepoint:syscalls:sys_enter_kill
+/args->sig == 9/
+{
+	printf("%s KILL   from %-16s pid=%-7d -> target pid=%d\n",
+	       strftime("%F %T", nsecs), comm, pid, args->pid);
+}
+
+tracepoint:syscalls:sys_enter_tgkill
+/args->sig == 9/
+{
+	printf("%s TGKILL from %-16s pid=%-7d -> tgid=%d tid=%d\n",
+	       strftime("%F %T", nsecs), comm, pid, args->tgid, args->tid);
+}
+
+tracepoint:syscalls:sys_enter_tkill
+/args->sig == 9/
+{
+	printf("%s TKILL  from %-16s pid=%-7d -> tid=%d\n",
+	       strftime("%F %T", nsecs), comm, pid, args->pid);
+}
+
+tracepoint:signal:signal_generate
+/args->sig == 9/
+{
+	printf("%s SIGKILL generated: sender comm=%s pid=%d si_code=%d\n",
+	       strftime("%F %T", nsecs), args->comm, args->pid, args->code);
+}

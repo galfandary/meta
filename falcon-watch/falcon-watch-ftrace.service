@@ -1,0 +1,12 @@
+[Unit]
+Description=Enable SIGKILL tracepoints at boot (Falcon catcher, ftrace)
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/falconwatch-ftrace.sh start
+ExecStop=/usr/local/sbin/falconwatch-ftrace.sh stop
+
+[Install]
+WantedBy=multi-user.target
