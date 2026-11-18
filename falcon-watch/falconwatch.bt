@@ -17,33 +17,33 @@
 
 BEGIN
 {
-	printf("falconwatch: watching for SIGKILL\n");
+    printf("falconwatch: watching for SIGKILL\n");
 }
 
 tracepoint:syscalls:sys_enter_kill
 /args->sig == 9/
 {
-	printf("%s KILL   from %-16s pid=%-7d -> target pid=%d\n",
-	       strftime("%F %T", nsecs), comm, pid, args->pid);
+    printf("%s KILL   from %-16s pid=%-7d -> target pid=%d\n",
+           strftime("%F %T", nsecs), comm, pid, args->pid);
 }
 
 tracepoint:syscalls:sys_enter_tgkill
 /args->sig == 9/
 {
-	printf("%s TGKILL from %-16s pid=%-7d -> tgid=%d tid=%d\n",
-	       strftime("%F %T", nsecs), comm, pid, args->tgid, args->tid);
+    printf("%s TGKILL from %-16s pid=%-7d -> tgid=%d tid=%d\n",
+           strftime("%F %T", nsecs), comm, pid, args->tgid, args->tid);
 }
 
 tracepoint:syscalls:sys_enter_tkill
 /args->sig == 9/
 {
-	printf("%s TKILL  from %-16s pid=%-7d -> tid=%d\n",
-	       strftime("%F %T", nsecs), comm, pid, args->pid);
+    printf("%s TKILL  from %-16s pid=%-7d -> tid=%d\n",
+           strftime("%F %T", nsecs), comm, pid, args->pid);
 }
 
 tracepoint:signal:signal_generate
 /args->sig == 9/
 {
-	printf("%s SIGKILL generated: sender comm=%s pid=%d si_code=%d\n",
-	       strftime("%F %T", nsecs), args->comm, args->pid, args->code);
+    printf("%s SIGKILL generated: sender comm=%s pid=%d si_code=%d\n",
+           strftime("%F %T", nsecs), args->comm, args->pid, args->code);
 }
